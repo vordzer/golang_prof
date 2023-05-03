@@ -7,7 +7,7 @@ import (
 )
 
 // Change to true if needed.
-var taskWithAsteriskIsCompleted = false
+var taskWithAsteriskIsCompleted = true
 
 var text = `Как видите, он  спускается  по  лестнице  вслед  за  своим
 	другом   Кристофером   Робином,   головой   вниз,  пересчитывая
@@ -46,6 +46,19 @@ var text = `Как видите, он  спускается  по  лестни�
 func TestTop10(t *testing.T) {
 	t.Run("no words in empty string", func(t *testing.T) {
 		require.Len(t, Top10(""), 0)
+	})
+
+	t.Run("string with only punctuations", func(t *testing.T) {
+		require.Len(t, Top10(" - , .  	 | !"), 0)
+	})
+
+	t.Run("less 10 words", func(t *testing.T) {
+		expected := []string{
+			"two",   // 2
+			"one",   // 1
+			"three", // 1
+		}
+		require.Equal(t, expected, Top10("one two two three"))
 	})
 
 	t.Run("positive test", func(t *testing.T) {
