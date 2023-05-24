@@ -20,6 +20,7 @@ type list struct {
 	len   int
 	front *ListItem
 	back  *ListItem
+	items map[interface{}]*ListItem
 }
 
 func (l *list) Len() int {
@@ -43,6 +44,7 @@ func (l *list) pushFrontItem(i *ListItem) *ListItem {
 		l.front.Prev.Next = l.front
 		l.front = l.front.Prev
 	}
+	l.items[i.Value] = l.front
 	l.len++
 	return l.front
 }
@@ -56,15 +58,13 @@ func (l *list) pushBackItem(i *ListItem) *ListItem {
 		l.back.Next.Prev = l.back
 		l.back = l.back.Next
 	}
+	l.items[i.Value] = l.back
 	l.len++
 	return l.back
 }
 
 func (l *list) pop(i *ListItem) *ListItem {
-	remItem := l.front
-	for remItem != nil && remItem.Value != i.Value {
-		remItem = remItem.Next // not in circle for linter
-	}
+	remItem := l.items[i.Value] // skip check by task condition
 	if remItem.Next != nil {
 		remItem.Next.Prev = remItem.Prev
 	}
@@ -77,6 +77,7 @@ func (l *list) pop(i *ListItem) *ListItem {
 	if remItem == l.back {
 		l.back = remItem.Prev
 	}
+	delete(l.items, i.Value)
 	l.len--
 	return remItem
 }
@@ -102,5 +103,10 @@ func (l *list) MoveToFront(i *ListItem) {
 }
 
 func NewList() List {
-	return new(list)
+	return &list{
+		len:   0,
+		front: nil,
+		back:  nil,
+		items: make(map[interface{}]*ListItem, 0),
+	}
 }
