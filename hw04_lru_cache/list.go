@@ -104,9 +104,6 @@ func (l *list) MoveToFront(i *ListItem) {
 
 func NewList() List {
 	return &list{
-		len:   0,
-		front: nil,
-		back:  nil,
 		items: make(map[interface{}]*ListItem, 0),
 	}
 }
