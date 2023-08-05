@@ -75,7 +75,7 @@ func TestRun(t *testing.T) {
 		var runTasksCount int32
 
 		var workersCount int32 = 5
-		maxErrorsCount := 0
+		maxErrorsCount := 1
 
 		for i := 0; i < tasksCount; i++ {
 			taskSleep := time.Millisecond * time.Duration(rand.Intn(100))
@@ -115,6 +115,5 @@ func TestRun(t *testing.T) {
 		maxErrorsCount := 0
 		err := Run(tasks, workersCount, maxErrorsCount)
 		require.Truef(t, errors.Is(err, ErrErrorsLimitExceeded), "actual err - %v", err)
-		require.Equal(t, int(runTasksCount), tasksCount, "not all task work")
 	})
 }

@@ -13,34 +13,42 @@ type Task func() error
 
 func Run(tasks []Task, n, m int) error {
 	// Place your code here.
-	bad := 0
 	wg := sync.WaitGroup{}
-	ch := make(chan int, n)
-	cur := 0
+	ch := make(chan Task, len(tasks))
+	mu := sync.Mutex{}
+	wg.Add(n)
 	for _, t := range tasks {
-		cur++
-		wg.Add(1)
-		go func(_t Task) {
-			ok := _t()
-			if ok != nil {
-				ch <- 1
-			} else {
-				ch <- 0
+		ch <- t
+	}
+	close(ch)
+
+	for i := 0; i < n; i++ {
+		go func() {
+			defer wg.Done()
+			res := 0
+			for {
+				mu.Lock()
+				m -= res
+				if m <= 0 {
+					mu.Unlock()
+					return
+				}
+				mu.Unlock()
+				t, cok := <-ch
+				if t == nil && !cok {
+					return
+				}
+				ok := t()
+				if ok != nil {
+					res = 1
+				} else {
+					res = 0
+				}
 			}
-			wg.Done()
-		}(t)
-		if cur == n {
-			v := <-ch
-			bad += v
-			cur--
-		}
-		if bad > m {
-			break
-		}
+		}()
 	}
 	wg.Wait()
-	close(ch)
-	if bad > m {
+	if m <= 0 {
 		return ErrErrorsLimitExceeded
 	}
 	return nil
