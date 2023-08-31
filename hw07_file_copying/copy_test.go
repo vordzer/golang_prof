@@ -49,9 +49,18 @@ func TestCopy(t *testing.T) {
 		require.True(t, errors.Is(err, ErrInvalidParam))
 	})
 	t.Run("invalid filename", func(t *testing.T) {
-		err := Copy("", "", 0, 0)
+		err := Copy("fakename1", "fakename2", 0, 0)
 
 		require.True(t, errors.Is(err, ErrFromFileNotExist))
+	})
+	t.Run("Same from and to", func(t *testing.T) {
+		fIn, _, err := makeTestFiles()
+		if err != nil {
+			fmt.Printf("Can't create tmpfile")
+		}
+		err = Copy(fIn.Name(), fIn.Name(), 0, 0)
+
+		require.True(t, errors.Is(err, ErrInvalidParam))
 	})
 	t.Run("file less offset", func(t *testing.T) {
 		fIn, fOut, err := makeTestFiles()

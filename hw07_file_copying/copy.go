@@ -8,7 +8,6 @@ import (
 )
 
 var (
-	ErrUnsupportedFile       = errors.New("unsupported file")
 	ErrFromFileNotExist      = errors.New("file for copy is not exist")
 	ErrOffsetExceedsFileSize = errors.New("offset exceeds file size")
 	ErrInvalidParam          = errors.New("invalid param")
@@ -25,8 +24,8 @@ func exists(path string) (bool, error) {
 	return false, err
 }
 
-func validateParam(from, _ string, offset, limit int64) (bool, error) {
-	if limit < 0 || offset < 0 {
+func validateParam(from, to string, offset, limit int64) (bool, error) {
+	if from == to || limit < 0 || offset < 0 {
 		return false, ErrInvalidParam
 	}
 	if res, err := exists(from); !res {
@@ -63,7 +62,7 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 		return err
 	}
 	defer func() {
-		if err := inFile.Close(); err != nil {
+		if err = inFile.Close(); err != nil {
 			fmt.Println(err)
 		}
 	}()
@@ -73,7 +72,7 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 		return err
 	}
 	defer func() {
-		if err := outFile.Close(); err != nil {
+		if err = outFile.Close(); err != nil {
 			fmt.Println(err)
 		}
 	}()
@@ -91,7 +90,7 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 
 	err = nil
 	curLoad := 0
-	readed := 0
+	read := 0
 	step := int(100 / allRead)
 	if step == 0 {
 		step = 1
@@ -104,22 +103,22 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 		}
 	}
 	for allRead != 0 && !errors.Is(err, io.EOF) {
-		readed, err = inFile.Read(buf)
+		read, err = inFile.Read(buf)
 		if err != nil && !errors.Is(err, io.EOF) {
 			return err
 		}
-		if readed == 0 {
+		if read == 0 {
 			break
 		}
-		if readed > int(allRead) {
-			readed = int(allRead)
+		if read > int(allRead) {
+			read = int(allRead)
 			allRead = 0
 		} else {
-			allRead -= int64(readed)
+			allRead -= int64(read)
 		}
-		_, errw := outFile.Write(buf[:readed])
-		if errw != nil {
-			return errw
+		_, err := outFile.Write(buf[:read])
+		if err != nil {
+			return err
 		}
 		fmt.Printf("[%v%%]\t%v -> %v\n", curLoad, inFile.Name(), outFile.Name())
 		curLoad += step
