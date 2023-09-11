@@ -8,18 +8,22 @@ import (
 )
 
 var (
+	ErrUnsupportedFile       = errors.New("unsupported file")
 	ErrFromFileNotExist      = errors.New("file for copy is not exist")
 	ErrOffsetExceedsFileSize = errors.New("offset exceeds file size")
 	ErrInvalidParam          = errors.New("invalid param")
 )
 
 func exists(path string) (bool, error) {
-	_, err := os.Stat(path)
-	if err == nil {
-		return true, nil
-	}
+	stat, err := os.Stat(path)
 	if os.IsNotExist(err) {
 		return false, ErrFromFileNotExist
+	}
+	if (stat.Mode()&os.ModeDevice) != 0 || (stat.Mode()&os.ModeCharDevice) != 0 {
+		return false, ErrUnsupportedFile
+	}
+	if err == nil {
+		return true, nil
 	}
 	return false, err
 }

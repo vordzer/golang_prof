@@ -89,8 +89,8 @@ func TestCopy(t *testing.T) {
 		}
 		defer CloseRemoveTestFiles(fIn, fOut)
 
-		err = Copy(fIn.Name(), fOut.Name(), 0, 0)
-		require.True(t, errors.Is(err, nil))
+		err = Copy("/dev/urandom", fOut.Name(), 0, 0)
+		require.True(t, errors.Is(err, ErrUnsupportedFile))
 	})
 	t.Run("Success copy limit file", func(t *testing.T) {
 		fIn, fOut, err := makeTestFiles()
